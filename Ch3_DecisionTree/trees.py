@@ -1,5 +1,6 @@
 from math import log
 import operator
+import numpy as np
 
 def createDataSet():
     dataSet = [[1, 1, 'yes'],
@@ -28,6 +29,26 @@ def calcShannonEnt(dataSet):
         shannonEnt -= prob * log(prob, 2)
 
     return shannonEnt
+
+def calcGini(dataSet):
+    numEntries = len(dataSet) # total num. of dataset
+    labelCounts = {}
+
+    for featVec in dataSet:
+        currentLabel = featVec[-1]
+        if currentLabel not in labelCounts.keys():
+            labelCounts[currentLabel] = 0
+        labelCounts[currentLabel] += 1 # frequency of each class
+
+    prob2Sum = 0.0
+    for key in labelCounts:
+        prob = float(labelCounts[key]) / numEntries
+        prob2Sum += prob * prob
+
+    Gini = 1 - prob2Sum
+
+    return Gini
+
 
 def splitDataSet(dataSet, axis, value):
     retDataSet = []
@@ -63,6 +84,65 @@ def chooseBestFeatureToSplit(dataSet):
 
     return bestFeature
 
+def chooseBestFeatureToSplitUsingGainRatio(dataSet):
+    numFeatures = len(dataSet[0]) - 1
+    baseEntropy = calcShannonEnt(dataSet)
+    bestRatio = 0.0
+    bestFeature = -1
+
+    infoGain = []
+    gainRatio = []
+
+    for i in range(numFeatures):
+        featList = [example[i] for example in dataSet]
+        uniqueVals = set(featList) # possible values for the feature i
+        newEntropy = 0.0
+        IV = 0.0
+        
+        for value in uniqueVals:
+            subDataSet = splitDataSet(dataSet, i, value) # classify each data to corresp. class
+            prob = len(subDataSet) / float(len(dataSet)) # weight
+            newEntropy += prob * calcShannonEnt(subDataSet) # new entropy
+            IV -= prob * log (prob, 2)
+
+        gain = baseEntropy - newEntropy
+        infoGain.append(baseEntropy - newEntropy)
+        gainRatio.append(gain / IV)
+
+    if (len(infoGain) > 2):
+        meanGain = np.mean(infoGain)
+        logic = np.where(infoGain > meanGain)[0]
+
+        for i in logic:
+            if gainRatio[i] > bestRatio:
+                bestFeature = i
+    else:
+        bestFeature = 0
+        
+    return bestFeature
+
+def chooseBestFeatureToSplitUsingGini(dataSet):
+    numFeatures = len(dataSet[0]) - 1
+    # baseGini = calcGini(dataSet)
+    bestGini = 100.0
+    bestFeature = -1
+
+    for i in range(numFeatures):
+        featList = [example[i] for example in dataSet]
+        uniqueVals = set(featList) # possible values for the feature i
+        newGini = 0.0
+        
+        for value in uniqueVals:
+            subDataSet = splitDataSet(dataSet, i, value) # classify each data to corresp. class
+            prob = len(subDataSet) / float(len(dataSet)) # weight
+            newGini += prob * calcGini(subDataSet) # new Gini_index
+
+        if (newGini < bestGini): # largest information gain
+            bestGini = newGini
+            bestFeature = i
+
+    return bestFeature
+
 def majorityCnt(classList):
     classCount = {}
     for vote in classList:
@@ -85,7 +165,9 @@ def createTree(dataSet, labels):
     if len(dataSet[0]) == 1:
         return majorityCnt(classList)
 
-    bestFeat = chooseBestFeatureToSplit(dataSet)
+    # bestFeat = chooseBestFeatureToSplit(dataSet)
+    # bestFeat = chooseBestFeatureToSplitUsingGainRatio(dataSet)
+    bestFeat = chooseBestFeatureToSplitUsingGini(dataSet)
     bestFeatLabel = labels[bestFeat]
 
     myTree = {bestFeatLabel:{}}
