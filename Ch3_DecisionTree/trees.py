@@ -13,14 +13,14 @@ def createDataSet():
     return dataSet, labels
 
 def calcShannonEnt(dataSet):
-    numEntries = len(dataSet)
+    numEntries = len(dataSet) # total num. of dataset
     labelCounts = {}
 
     for featVec in dataSet:
         currentLabel = featVec[-1]
         if currentLabel not in labelCounts.keys():
             labelCounts[currentLabel] = 0
-        labelCounts[currentLabel] += 1
+        labelCounts[currentLabel] += 1 # frequency of each class
 
     shannonEnt = 0.0
     for key in labelCounts:
@@ -48,16 +48,16 @@ def chooseBestFeatureToSplit(dataSet):
 
     for i in range(numFeatures):
         featList = [example[i] for example in dataSet]
-        uniqueVals = set(featList)
+        uniqueVals = set(featList) # possible values for the feature i
         newEntropy = 0.0
         
         for value in uniqueVals:
-            subDataSet = splitDataSet(dataSet, i, value)
-            prob = len(subDataSet) / float(len(dataSet))
-            newEntropy += prob * calcShannonEnt(subDataSet)
+            subDataSet = splitDataSet(dataSet, i, value) # classify each data to corresp. class
+            prob = len(subDataSet) / float(len(dataSet)) # weight
+            newEntropy += prob * calcShannonEnt(subDataSet) # new entropy
 
         infoGain = baseEntropy - newEntropy
-        if (infoGain > bestInfoGain):
+        if (infoGain > bestInfoGain): # largest information gain
             bestInfoGain = infoGain
             bestFeature = i
 
