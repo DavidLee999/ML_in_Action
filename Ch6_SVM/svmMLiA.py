@@ -17,7 +17,7 @@ def selectJrand(i, m):
     while (j == i):
         j = int(random.uniform(0, m))
 
-    return j
+    return jf
 
 def clipAlpha(aj, H, L):
     if aj > H:
@@ -132,14 +132,14 @@ class optStruct:
         self.alphas = mat(zeros((self.m, 1)))
         self.b = 0
         self.eCache = mat(zeros((self.m, 2)))
-        self.K = mat(zeros((self.m, self.m)))
+        self.K = mat(zeros((self.m, self.m))) # kernel matrix
         for i in range(self.m):
             self.K[:, i] = kernelTrans(self.X, self.X[i, :], kTup)
 
 
 def calcEk(oS, k):
     # fXk = float(multiply(oS.alphas, oS.labelMat).T * (oS.X * oS.X[k, :].T)) + oS.b
-    fXk = float(multiply(oS.alphas, oS.labelMat).T * oS.K[:, k] + oS.b)
+    fXk = float(multiply(oS.alphas, oS.labelMat).T * oS.K[:, k] + oS.b) # f(x) = sum(alpha_i * y_i * kernel(x_all, x_i)) + b
     Ek = fXk - float(oS.labelMat[k])
 
     return Ek
@@ -238,15 +238,15 @@ def smoP(dataMatIn, classLabels, C, toler, maxIter, kTup = ('lin', 0)):
     entireSet = True
     alphaPairsChanged = 0
 
-    while (iter < maxIter) and ((alphaPairsChanged > 0) or (entireSet)):
+    while (iter < maxIter) and ((alphaPairsChanged > 0) or (entireSet)): #stop: max iterations or nothing can be changed
         alphaPairsChanged = 0
-        if entireSet:
+        if entireSet: # loop through all values
             for i in range(oS.m):
                 alphaPairsChanged += innerL(i, oS)
                 print "fullSet, iter: %d i: %d, pairs changed: %d" %(iter, i, alphaPairsChanged)
 
             iter += 1
-        else:
+        else: # loop through non-boundary values
             nonBoundIs = nonzero((oS.alphas.A > 0) * (oS.alphas.A < C))[0]
             for i in nonBoundIs:
                 alphaPairsChanged += innerL(i, oS)
@@ -278,15 +278,15 @@ def testRbf(k1 = 1.3):
     b, alphas = smoP(dataArr, labelArr, 200, 0.0001, 10000, ('rbf', k1))
     datMat = mat(dataArr)
     labelMat = mat(labelArr).transpose()
-    svInd = nonzero(alphas.A > 0)[0]
-    sVs = datMat[svInd]
+    svInd = nonzero(alphas.A > 0)[0] #support vectors' index
+    sVs = datMat[svInd] # support vectors
     labelSV = labelMat[svInd]
     print "There are %d Support Vectors" %shape(sVs)[0]
     m, n = shape(datMat)
     errorCount = 0
     for i in range(m):
-        kernelEval = kernelTrans(sVs, datMat[i, :], ('rbf', k1))
-        predict = kernelEval.T * multiply(labelSV, alphas[svInd]) + b
+        kernelEval = kernelTrans(sVs, datMat[i, :], ('rbf', k1)) # k(x_sv, x_input)
+        predict = kernelEval.T * multiply(labelSV, alphas[svInd]) + b # f(x_input)
         if sign(predict) != sign(labelArr[i]):
             errorCount += 1
     print "the training error rate is: %f" %(float(errorCount) / m)
