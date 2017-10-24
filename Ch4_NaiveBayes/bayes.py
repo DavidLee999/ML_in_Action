@@ -34,7 +34,7 @@ def trainNB0(trainMatrix, trainCategory):
     numTrainDocs = len(trainMatrix)
     numWords = len(trainMatrix[0])
     pAbusive = sum(trainCategory) / float(numTrainDocs)
-    p0Num = ones(numWords)
+    p0Num = ones(numWords) # laplacian correction
     p1Num = ones(numWords)
     p0Denom = 2.0
     p1Denom = 2.0
