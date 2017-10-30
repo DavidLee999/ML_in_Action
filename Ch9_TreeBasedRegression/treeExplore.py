@@ -20,8 +20,8 @@ def reDraw(tolS, tolN):
         myTree = regTrees.createTree(reDraw.rawDat, ops = (tolS, tolN))
         yHat = regTrees.createForeCast(myTree, reDraw.testDat)
 
-    reDraw.a.scatter(reDraw.rawDat[:,0], reDraw.rawDat[:,1], s = 5)
-    reDraw.a.plot(reDraw.testDat, yHat, linewidth = 2.0)
+    reDraw.a.scatter(reDraw.rawDat[:,0].T.A.tolist()[0], reDraw.rawDat[:,1].T.A.tolist()[0], s = 5)
+    reDraw.a.plot(reDraw.testDat, yHat, linewidth = 2.0, color = 'red')
     reDraw.canvas.show()
 def getInputs():
     try:
