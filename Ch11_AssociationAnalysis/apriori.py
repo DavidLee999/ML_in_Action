@@ -7,7 +7,7 @@ def createC1(dataSet):
     C1 = []
     for transaction in dataSet:
         for item in transaction:
-            if not [item] in C1:
+            if not [item] in C1: # create sets with only one elements
                 C1.append([item])
 
     C1.sort()
@@ -40,10 +40,10 @@ def aprioriGen(Lk, k):
 
     for i in range(lenLk):
         for j in range(i + 1, lenLk): # combine two sets with the same first k elements
-            L1 = list(Lk[i])[:k - 2]
-            L2 = list(Lk[j])[:k - 2]
-            L1.sort()
-            L2.sort()
+            L1 = list(Lk[i])[:k - 2] # why it works: Apriori principle: if an itemset is infrequent, then its
+            L2 = list(Lk[j])[:k - 2] # supersets are also infrequent. And we generate sets with more items by
+            L1.sort() # combining sets with less items, if one of the subset do not exist, meaning its supperset
+            L2.sort() # is not a frequent set
 
             if L1 == L2:
                 retList.append(Lk[i] | Lk[j])
@@ -58,7 +58,9 @@ def apriori(dataSet, minSupport = 0.5):
     k = 2
     while (len(L[k - 2]) > 0):
         Ck = aprioriGen(L[k - 2], k)
+        print Ck
         Lk, supK = scanD(D, Ck, minSupport)
+        supportData.update(supK)
         L.append(Lk)
         k += 1
 
@@ -66,7 +68,7 @@ def apriori(dataSet, minSupport = 0.5):
 
 def generateRules(L, supportData, minConf = 0.7):
     bigRuleList = []
-    for i in range(1, len(l)):
+    for i in range(1, len(L)): # start from more-than-one-itme sets
         for freqSet in L[i]:
             H1 = [frozenset([item]) for item in freqSet]
 
@@ -80,7 +82,7 @@ def generateRules(L, supportData, minConf = 0.7):
 def calcConf(freqSet, H, supportData, brl, minConf = 0.7):
     prunedH = []
     for conseq in H:
-        conf = supportData[freqSet] / supportData[freqSet - conseq]
+        conf = supportData[freqSet] / supportData[freqSet - conseq] # calculating support(p|h) / support(h)
         if conf > minConf:
             print freqSet - conseq, '-->', conseq, 'conf: ', conf
             brl.append((freqSet - conseq, conseq, conf))
