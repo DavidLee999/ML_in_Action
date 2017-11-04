@@ -74,7 +74,7 @@ def generateRules(L, supportData, minConf = 0.7):
 
             if (i > 1):
                 rulesFromConseq(freqSet, H1, supportData, bigRuleList, minConf)
-            else:
+            else: # freq with more than 2 items
                 calcConf(freqSet, H1, supportData, bigRuleList, minConf)
 
     return bigRuleList
@@ -92,8 +92,8 @@ def calcConf(freqSet, H, supportData, brl, minConf = 0.7):
 
 def rulesFromConseq(freqSet, H, supportData, brl, minConf = 0.7):
     m = len(H[0])
-    if (len(freqSet) > (m + 1)):
-        Hmp1 = aprioriGen(H, m + 1)
-        Hmp1 = calcConf(freqSet, Hmp1, supportData, brl, minConf)
+    if (len(freqSet) > (m + 1)): # if freqSet is large enough to remove H
+        Hmp1 = aprioriGen(H, m + 1) # generate superset of H
+        Hmp1 = calcConf(freqSet, Hmp1, supportData, brl, minConf) # confidence of h with more than 1 item
         if (len(Hmp1) > 1):
-            rulesFromConseq(freqSet, Hmp1, supportData, brl, minConf)
+            rulesFromConseq(freqSet, Hmp1, supportData, brl, minConf) # recursive until h with only one item
